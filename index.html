@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jadval Viktorinasi</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding-bottom: 180px;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 20px;
+      background-color: #fff;
+      box-shadow: rgba(0, 0, 0, 0.08) 0px 2px 10px;
+      z-index: 100;
+    }
+
+    .progress-bar {
+      position: relative;
+      flex: 1;
+      max-width: 90%;
+      margin: auto;
+      height: 10px;
+      background-color: #e6e6e6;
+      border-radius: 5px;
+      overflow: visible;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: #29cc57;
+      border-radius: 5px;
+      width: 0%;
+      transition: width 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+         .progress-percent {
+      position: absolute;
+      right: -35px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      color: #555;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 90px 20px 20px;
+      width: 100%;
+    }
+
+    .content-wrapper {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .quiz-title {
+      font-size: clamp(14px, 3vw, 16px);
+      line-height: 1.5;
+    }
+
+    .quiz-title p:last-child {
+      padding-top: 16px;
+      font-weight: 500;
+    }
+
+    .question-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      background-color: #e0f2fe;
+      color: #0369a1;
+      border-radius: 6px;
+      font-size: clamp(11px, 2vw, 13px);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .chart-wrapper {
+      margin-top: clamp(20px, 4vw, 40px);
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      height: clamp(180px, 45vw, 300px);
+      padding-left: clamp(25px, 6vw, 40px);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .grid-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+      border-top: 1px dotted #d1d5db;
+    }
+
+    .grid-line:nth-child(1) { top: 0; }
+    .grid-line:nth-child(2) { top: 25%; }
+    .grid-line:nth-child(3) { top: 50%; }
+    .grid-line:nth-child(4) { top: 75%; }
+    .grid-line:nth-child(5) { top: 100%; }
+
+    .chart-container {
+      position: relative;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: clamp(8px, 2vw, 10px);
+      padding-right: clamp(5px, 2vw, 10px);
+      z-index: 2;
+    }
+
+    .bar {
+      flex: 1;
+      background-color: rgba(225, 225, 225);
+      position: relative;
+      transition: background-color 0.2s ease-in;
+      border-radius: 20px 20px 20px 20px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .bar.clickable:hover {
+      background-color: rgba(132, 201, 24);
+    }
+
+    .bar.selected {
+      background-color: rgba(132, 201, 24);
+    }
+
+    .bar.selected .bar-value {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .bar.disabled {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .bar.correct-answer {
+      background-color: rgba(132, 201, 24);
+      opacity: 1;
+    }
+
+    .bar.correct-answer .bar-value {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .bar.wrong-answer {
+      opacity: 0.4;
+    }
+
+    .mcq-option.wrong-answer {
+      opacity: 0.4;
+    }
+
+    .bar.previously-selected {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .mcq-option.previously-selected {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .bar.non-clickable {
+      cursor: default;
+      pointer-events: none;
+      background-color: rgba(132, 201, 24);
+    }
+
+    .bar-value {
+      position: absolute;
+      top: -35px;
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background-color: rgba(134, 200, 30);
+      color: #fff;
+      padding: 4px 8px;
+      font-size: clamp(10px, 2vw, 13px);
+      border-radius: 8px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .bar.non-clickable .bar-value {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .bar-value::after {
+      content: "";
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid rgba(134, 200, 30);
+    }
+
+    .bar.clickable:hover .bar-value {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .y-labels {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: clamp(9px, 2vw, 12px);
+      color: #4b5563;
+      transform: translateX(clamp(-8px, -4vw, -20px));
+    }
+
+    .label-container {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-top: 10px;
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: clamp(25px, 6vw, 40px);
+      gap: clamp(8px, 2vw, 10px);
+      padding-right: clamp(5px, 2vw, 10px);
+    }
+
+    .label-box {
+      flex: 1;
+      min-width: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .label-line {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 2px;
+      width: 1px;
+      background-color: #9ca3af;
+    }
+
+    .label-text {
+      margin-top: 9px;
+      color: #374151;
+      font-size: clamp(12px, 2.8vw, 14px);
+    }
+
+    .mcq-options {
+      margin-top: clamp(20px, 4vw, 30px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mcq-option {
+      padding: 14px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: clamp(13px, 3.5vw, 15px);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .mcq-option:hover {
+      background-color: #f9fafb;
+      border-color: #d1d5db;
+    }
+
+    .mcq-option.selected {
+      background-color: #dcfce7;
+      border-color: #86c91e;
+    }
+
+    .mcq-option.disabled {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .mcq-option-id {
+      font-weight: 600;
+      min-width: 24px;
+    }
+
+    .data-driven-select {
+      margin-top: clamp(24px, 5vw, 30px);
+      padding: 14px 16px;
+      border: 1px solid light-dark(rgba(89.8%, 89.8%, 89.8%, 1), rgba(29.8%, 29.8%, 29.8%, 1));
+      border-radius: 8px;
+      font-size: clamp(14px, 2.5vw, 15px);
+      cursor: pointer;
+      width: 100%;
+      max-width: 400px;
+      background-color: #fff;
+    }
+
+    .data-driven-options {
+      margin-top: clamp(20px, 4vw, 30px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .explanation-box {
+      margin-top: 20px;
+      padding: 16px;
+      background-color: #f0f9ff;
+      border-left: 4px solid #29cc57;
+      border-radius: 8px;
+      font-size: clamp(13px, 2.5vw, 15px);
+      line-height: 1.6;
+      display: none;
+    }
+
+    .footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #fff;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+      padding: 16px 20px;
+      display: flex;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .footer button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 54px;
+      padding: 14px 24px;
+      min-height: 50px;
+      outline: none;
+      border: none;
+      font-size: clamp(15px, 4vw, 16px);
+      font-weight: 500;
+      cursor: pointer;
+      background-color: #333;
+      color: #fff;
+      box-shadow: 0px 4px 0px 0px #000;
+      width: 100%;
+      max-width: 100%;
+      transition: opacity 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .alert-incorrect, .alert-correct {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-width: 100%;
+      width: 100%;
+      padding: 20px;
+      border-radius: 20px 20px 0 0;
+      display: none;
+      z-index: 101;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .alert-incorrect {
+      background-color: #f8d7da;
+    }
+
+    .alert-correct {
+      background-color: #d4edda;
+    }
+
+    .alert-content {
+      max-width: 750px;
+      margin: 0 auto;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .alert-incorrect .try-again,
+    .alert-incorrect .see-answer,
+    .alert-correct .try-again,
+    .alert-correct .see-answer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 54px;
+      padding: 14px 20px;
+      min-height: 48px;
+      outline: none;
+      border: none;
+      font-size: clamp(14px, 3.5vw, 16px);
+      font-weight: bold;
+      cursor: pointer;
+      flex: 1;
+      min-width: 120px;
+      transition: opacity 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .alert-incorrect .try-again {
+      background-color: #333;
+      color: #fff;
+      box-shadow: 0px 4px 0px 0px #000;
+    }
+
+    .alert-incorrect .see-answer {
+      background-color: light-dark(rgba(0%, 0%, 0%, 0.1), rgba(100%, 100%, 100%, 0.2));
+      color: light-dark(rgba(0%, 0%, 0%, 1), rgba(100%, 100%, 100%, 1));
+      box-shadow: 0px 4px 0px 0px rgba(0, 0, 0, 0.2);
+    }
+
+    .alert-correct .try-again {
+      background-color: light-dark(rgba(0%, 0%, 0%, 0.1), rgba(100%, 100%, 100%, 0.2));
+      color: light-dark(rgba(0%, 0%, 0%, 1), rgba(100%, 100%, 100%, 1));
+      box-shadow: 0px 4px 0px 0px rgba(0, 0, 0, 0.2);
+    }
+
+    .alert-correct .see-answer {
+      background-color: #333;
+      color: #fff;
+      box-shadow: 0px 4px 0px 0px #000;
+    }
+
+    .footer button:hover,
+    .alert-incorrect button:hover,
+    .alert-correct button:hover {
+      opacity: 0.9;
+    }
+
+    .footer button:active,
+    .alert-incorrect button:active,
+    .alert-correct button:active {
+      transform: translateY(2px);
+    }
+
+    .validation-message {
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #fff3cd;
+      color: #856404;
+      padding: 12px 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      z-index: 102;
+      font-size: 14px;
+      display: none;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    @media (min-width: 768px) {
+      .progress-bar {
+        max-width: 55%;
+      }
+
+      .chart-wrapper {
+        max-width: 600px;
+      }
+
+      .label-container {
+        max-width: 600px;
+      }
+
+      .button-group {
+        flex-wrap: nowrap;
+      }
+
+      .footer button {
+        max-width: 392px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .main {
+        padding: 100px 40px 20px;
+      }
+
+      .chart-wrapper {
+        max-width: 700px;
+        height: 300px;
+      }
+
+      .label-container {
+        max-width: 700px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .progress-bar {
+        max-width: 75%;
+      }
+
+      .mcq-option {
+        padding: 12px 14px;
+        font-size: 13px;
+      }
+
+      .footer button {
+        min-height: 48px;
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="progress">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+      <span class="progress-percent" id="progressPercent"></span>
+    </div>
+  </div>
+
+  <div class="validation-message" id="validationMessage">Iltimos, javobni tanlang</div>
+
+  <div class="main">
+    <div class="content-wrapper">
+      <div class="quiz-title" id="quizTitle"></div>
+      <div class="chart-wrapper" id="chartWrapper" style="display:none;">
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+        <div class="y-labels" id="yLabels"></div>
+        <div class="chart-container" id="chartContainer"></div>
+      </div>
+      <div class="label-container" id="labelContainer"></div>
+      <div class="mcq-options" id="mcqOptions"></div>
+      <div class="data-driven-options" id="dataDrivenOptions"></div>
+      <div class="explanation-box" id="explanationBox"></div>
+    </div>
+  </div>
+
+  <div class="alert-incorrect" id="alertIncorrect">
+    <div class="alert-content">
+      <div><p id="alertTextIncorrect">❌ Noto'g'ri.</p></div>
+      <div class="button-group">
+        <button class="try-again" id="tryAgainBtn">Yana urinish</button>
+        <button class="see-answer" id="seeAnswerIncorrectBtn">Tushuntirish</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert-correct" id="alertCorrect">
+    <div class="alert-content">
+      <div><p id="alertTextCorrect">✅ To'g'ri!</p></div>
+      <div class="button-group">
+        <button class="try-again" id="explanationCorrectBtn">Tushuntirish</button>
+        <button class="see-answer" id="continueBtn">Davom etish</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer" id="footer">
+    <button id="checkBtn">Tekshirish</button>
+  </div>
+
+  <script>
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playClickSound() {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    }
+
+    function playCorrectSound() {
+      const oscillator1 = audioContext.createOscillator();
+      const oscillator2 = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator1.connect(gainNode);
+      oscillator2.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator1.frequency.value = 523.25;
+      oscillator2.frequency.value = 659.25;
+      oscillator1.type = 'sine';
+      oscillator2.type = 'sine';
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      oscillator1.start(audioContext.currentTime);
+      oscillator2.start(audioContext.currentTime + 0.1);
+      oscillator1.stop(audioContext.currentTime + 0.3);
+      oscillator2.stop(audioContext.currentTime + 0.5);
+    }
+
+    function playWrongSound() {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = 200;
+      oscillator.type = 'sawtooth';
+      gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    }
+
+    const questions = [
+      {
+        type: "bar-chart",
+        question: "Qaysi shtatda taxminan 125 ta kafe bor?",
+        data: [
+          { label: "CT", value: 125, correct: true },
+          { label: "DE", value: 50, correct: false },
+          { label: "NJ", value: 300, correct: false },
+          { label: "NY", value: 650, correct: false },
+          { label: "PA", value: 400, correct: false },
+        ],
+      },
+      {
+        type: "multiple-choice",
+        question: "Qaysi hududda aholi jon boshiga eng ko'p kafe mavjud?",
+        options: [
+          { id: "A", text: "Dehqonchilik bilan shug'ullanadigan qishloq hududlari" },
+          { id: "B", text: "Shahar poytaxtlari" },
+          { id: "C", text: "Shahar atrofi turar-joy hududlari" },
+          { id: "D", text: "Sanoat zonalari" },
+        ],
+        correctAnswer: "B",
+      },
+      {
+        type: "data-driven-multiple-choice-chart",
+        question: "Qaysi shtat yiliga taxminan 200 tonna qahva yetishtiradi?",
+        data: [
+          { label: "NE", value: 80, color: "#1e3a8a" },
+          { label: "OK", value: 95, color: "#5b21b6" },
+          { label: "KS", value: 120, color: "#a21caf" },
+          { label: "MO", value: 200, color: "#ec4899" },
+          { label: "CO", value: 450, color: "#facc15" }
+        ],
+        options: [
+          { id: "A", text: "NE" },
+          { id: "B", text: "MO" },
+          { id: "C", text: "CO" }
+        ],
+        correctAnswer: "B",
+      },
+      {
+        type: "data-driven-multiple-choice-chart",
+        question: "Qaysi ikki shtat yiliga 150 tonnadan ko'proq qahva yetishtiradi?",
+        data: [
+          { label: "NE", value: 80, color: "#1e3a8a" },
+          { label: "OK", value: 95, color: "#5b21b6" },
+          { label: "KS", value: 120, color: "#a21caf" },
+          { label: "MO", value: 200, color: "#ec4899" },
+          { label: "CO", value: 450, color: "#facc15" }
+        ],
+        options: [
+          { id: "A", text: "NE" },
+          { id: "B", text: "KS" },
+          { id: "C", text: "MO" },
+          { id: "D", text: "CO" }
+        ],
+        correctAnswers: ["C", "D"],
+        multiSelect: true,
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let selectedBars = [];
+    let selectedOptions = [];
+    let previouslySelectedBars = [];
+    let previouslySelectedOptions = [];
+    let isAnswered = false;
+    let wrongAttempts = 0;
+
+    const elements = {
+      chartContainer: document.getElementById("chartContainer"),
+      labelContainer: document.getElementById("labelContainer"),
+      quizTitle: document.getElementById("quizTitle"),
+      checkBtn: document.getElementById("checkBtn"),
+      alertIncorrect: document.getElementById("alertIncorrect"),
+      alertCorrect: document.getElementById("alertCorrect"),
+      tryAgainBtn: document.getElementById("tryAgainBtn"),
+      seeAnswerIncorrectBtn: document.getElementById("seeAnswerIncorrectBtn"),
+      explanationCorrectBtn: document.getElementById("explanationCorrectBtn"),
+      continueBtn: document.getElementById("continueBtn"),
+      progressFill: document.getElementById("progressFill"),
+      progressPercent: document.getElementById("progressPercent"),
+      footer: document.getElementById("footer"),
+      yLabels: document.getElementById("yLabels"),
+      validationMessage: document.getElementById("validationMessage"),
+      explanationBox: document.getElementById("explanationBox"),
+      chartWrapper: document.getElementById("chartWrapper"),
+      mcqOptions: document.getElementById("mcqOptions"),
+      dataDrivenOptions: document.getElementById("dataDrivenOptions")
+    };
+
+    document.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+        playClickSound();
+      }
+    });
+
+    function renderQuestion() {
+      const q = questions[currentQuestionIndex];
+      isAnswered = false;
+      selectedBars = [];
+      selectedOptions = [];
+      previouslySelectedBars = [];
+      previouslySelectedOptions = [];
+      wrongAttempts = 0;
+
+      let badge = "";
+      if (q.type === "multiple-choice") {
+        badge = `<div class="question-badge">Ko'p variantli savol</div>`;
+      } else if (q.type === "data-driven-multiple-choice-chart" && q.multiSelect) {
+        badge = `<div class="question-badge">Bir nechta javobni tanlang</div>`;
+      }
+
+      elements.quizTitle.innerHTML = `${badge}<p>${q.question}</p>`;
+      elements.chartContainer.innerHTML = "";
+      elements.labelContainer.innerHTML = "";
+      elements.mcqOptions.innerHTML = "";
+      elements.dataDrivenOptions.innerHTML = "";
+
+      if (q.type === "bar-chart" || q.type === "data-driven-multiple-choice-chart") {
+        elements.chartWrapper.style.display = "block";
+        renderChart(q);
+      } else {
+        elements.chartWrapper.style.display = "none";
+      }
+
+      if (q.type === "multiple-choice") {
+        renderMCQ(q);
+      } else if (q.type === "data-driven-multiple-choice-chart") {
+        renderDataDrivenMCQ(q);
+      }
+
+      elements.alertIncorrect.style.display = "none";
+      elements.alertCorrect.style.display = "none";
+      elements.footer.style.display = "flex";
+      elements.checkBtn.textContent = "Tekshirish";
+
+      updateProgress();
+    }
+
+    function renderChart(q) {
+      const values = q.data.map(d => d.value);
+      const maxValue = Math.max(...values);
+      const yMax = Math.ceil(maxValue / 50) * 50 + 50;
+      const yStep = yMax / 4;
+
+      elements.yLabels.innerHTML = "";
+      for (let i = 4; i >= 0; i--) {
+        const label = document.createElement("div");
+        label.textContent = Math.round(yStep * i);
+        elements.yLabels.appendChild(label);
+      }
+
+      q.data.forEach((item, i) => {
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        
+        if (q.type === "data-driven-multiple-choice-chart") {
+          bar.classList.add("non-clickable");
+          if (item.color) {
+            bar.style.backgroundColor = item.color;
+          }
+        } else {
+          bar.classList.add("clickable");
+          bar.addEventListener("click", () => toggleSelectBar(bar));
+        }
+
+        bar.style.height = `${(item.value / yMax) * 100}%`;
+        bar.dataset.correct = item.correct || false;
+        bar.dataset.index = i;
+        bar.innerHTML = `<div class="bar-value">${item.value}</div>`;
+        elements.chartContainer.appendChild(bar);
+
+        const labelBox = document.createElement("div");
+        labelBox.className = "label-box";
+        labelBox.innerHTML = `
+          <div class="label-line"></div>
+          <div class="label-text">${item.label || item.state}</div>
+        `;
+        elements.labelContainer.appendChild(labelBox);
+      });
+    }
+
+    function renderMCQ(q) {
+      q.options.forEach((option) => {
+        const optionDiv = document.createElement("div");
+        optionDiv.className = "mcq-option";
+        optionDiv.dataset.id = option.id;
+        optionDiv.innerHTML = `
+          <span class="mcq-option-id">${option.id}.</span>
+          <span>${option.text}</span>
+        `;
+        optionDiv.addEventListener("click", () => toggleSelectOption(optionDiv));
+        elements.mcqOptions.appendChild(optionDiv);
+      });
+    }
+
+    function renderDataDrivenMCQ(q) {
+      q.options.forEach((option) => {
+        const optionDiv = document.createElement("div");
+        optionDiv.className = "mcq-option";
+        optionDiv.dataset.id = option.id;
+        optionDiv.innerHTML = `
+          <span class="mcq-option-id">${option.id}.</span>
+          <span>${option.text}</span>
+        `;
+        optionDiv.addEventListener("click", () => toggleSelectOption(optionDiv, q.multiSelect));
+        elements.dataDrivenOptions.appendChild(optionDiv);
+      });
+    }
+
+    function toggleSelectBar(bar) {
+      if (isAnswered) return;
+
+      // Check if this bar was previously selected and is now disabled
+      if (bar.classList.contains('previously-selected')) return;
+
+      const q = questions[currentQuestionIndex];
+
+      // For bar-chart type, only allow single selection
+      if (q.type === "bar-chart") {
+        if (selectedBars.includes(bar)) {
+          bar.classList.remove("selected");
+          selectedBars = selectedBars.filter((b) => b !== bar);
+        } else {
+          // Deselect all other bars first
+          selectedBars.forEach(b => b.classList.remove("selected"));
+          selectedBars = [];
+          
+          // Select the clicked bar
+          bar.classList.add("selected");
+          selectedBars.push(bar);
+        }
+      } else {
+        // For other types (if any), allow multiple selections
+        if (selectedBars.includes(bar)) {
+          bar.classList.remove("selected");
+          selectedBars = selectedBars.filter((b) => b !== bar);
+        } else {
+          bar.classList.add("selected");
+          selectedBars.push(bar);
+        }
+      }
+    }
+
+    function toggleSelectOption(optionDiv, multiSelect = false) {
+      if (isAnswered) return;
+
+      // Check if this option was previously selected and is now disabled
+      if (optionDiv.classList.contains('previously-selected')) return;
+
+      const optionId = optionDiv.dataset.id;
+
+      if (selectedOptions.includes(optionId)) {
+        optionDiv.classList.remove("selected");
+        selectedOptions = selectedOptions.filter((id) => id !== optionId);
+      } else {
+        if (!multiSelect) {
+          document.querySelectorAll(".mcq-option.selected").forEach(opt => {
+            opt.classList.remove("selected");
+          });
+          selectedOptions = [];
+        }
+        optionDiv.classList.add("selected");
+        selectedOptions.push(optionId);
+      }
+    }
+
+    function showValidationMessage(message) {
+      elements.validationMessage.textContent = message;
+      elements.validationMessage.style.display = "block";
+      
+      setTimeout(() => {
+        elements.validationMessage.style.display = "none";
+      }, 2500);
+    }
+
+    elements.checkBtn.addEventListener("click", () => {
+      const q = questions[currentQuestionIndex];
+
+      if (q.type === "bar-chart") {
+        if (selectedBars.length === 0) {
+          showValidationMessage("Iltimos, javobni tanlang");
+          return;
+        }
+      } else if (q.type === "multiple-choice" || q.type === "data-driven-multiple-choice-chart") {
+        if (selectedOptions.length === 0) {
+          showValidationMessage("Iltimos, javobni tanlang");
+          return;
+        }
+      }
+
+      const isCorrect = checkAnswer(q);
+      isAnswered = true;
+
+      if (isCorrect) {
+        playCorrectSound();
+      } else {
+        playWrongSound();
+        wrongAttempts++;
+      }
+
+      showFeedback(isCorrect);
+    });
+
+    function checkAnswer(q) {
+      if (q.type === "bar-chart") {
+        const correctCount = q.data.filter((d) => d.correct).length;
+        return selectedBars.every((bar) => bar.dataset.correct === "true") &&
+               selectedBars.length === correctCount;
+      } else if (q.type === "multiple-choice") {
+        return selectedOptions.length === 1 && selectedOptions[0] === q.correctAnswer;
+      } else if (q.type === "data-driven-multiple-choice-chart") {
+        if (q.multiSelect) {
+          const correctAnswers = q.correctAnswers.sort();
+          const userAnswers = selectedOptions.sort();
+          return JSON.stringify(correctAnswers) === JSON.stringify(userAnswers);
+        } else {
+          return selectedOptions.length === 1 && selectedOptions[0] === q.correctAnswer;
+        }
+      }
+      return false;
+    }
+
+    function showFeedback(correct) {
+      elements.footer.style.display = "none";
+
+      if (correct) {
+        elements.alertCorrect.style.display = "block";
+        elements.alertIncorrect.style.display = "none";
+      } else {
+        elements.alertIncorrect.style.display = "block";
+        elements.alertCorrect.style.display = "none";
+
+        if (wrongAttempts >= 2) {
+          elements.seeAnswerIncorrectBtn.textContent = "Javobni ko'rish";
+        } else {
+          elements.seeAnswerIncorrectBtn.textContent = "Tushuntirish";
+        }
+      }
+
+      document.querySelectorAll(".bar.clickable").forEach((bar) => {
+        bar.classList.add("disabled");
+      });
+      document.querySelectorAll(".mcq-option").forEach((opt) => {
+        opt.classList.add("disabled");
+      });
+    }
+
+    elements.tryAgainBtn.addEventListener("click", () => {
+      elements.alertIncorrect.style.display = "none";
+      elements.footer.style.display = "flex";
+      isAnswered = false;
+
+      const q = questions[currentQuestionIndex];
+
+      // Store previously selected wrong answers
+      if (q.type === "bar-chart") {
+        previouslySelectedBars = [...selectedBars];
+        selectedBars.forEach((bar) => {
+          bar.classList.remove("selected");
+          bar.classList.add("previously-selected");
+        });
+      } else if (q.type === "multiple-choice" || q.type === "data-driven-multiple-choice-chart") {
+        previouslySelectedOptions = [...selectedOptions];
+        document.querySelectorAll(".mcq-option.selected").forEach(opt => {
+          opt.classList.remove("selected");
+          opt.classList.add("previously-selected");
+        });
+      }
+
+      selectedBars = [];
+      selectedOptions = [];
+
+      document.querySelectorAll(".bar.clickable:not(.previously-selected)").forEach((bar) => {
+        bar.classList.remove("disabled");
+        bar.classList.remove("correct-answer");
+        bar.classList.remove("wrong-answer");
+      });
+      document.querySelectorAll(".mcq-option:not(.previously-selected)").forEach((opt) => {
+        opt.classList.remove("disabled");
+        opt.classList.remove("wrong-answer");
+      });
+    });
+
+    elements.seeAnswerIncorrectBtn.addEventListener("click", () => {
+      const q = questions[currentQuestionIndex];
+      
+      if (wrongAttempts >= 2) {
+        if (q.type === "bar-chart") {
+          document.querySelectorAll(".bar.clickable").forEach((bar) => {
+            if (bar.dataset.correct === "true") {
+              bar.classList.add("correct-answer");
+            } else if (selectedBars.includes(bar) || previouslySelectedBars.some(b => b.dataset.index === bar.dataset.index)) {
+              bar.classList.add("wrong-answer");
+            }
+          });
+        } else if (q.type === "multiple-choice" || q.type === "data-driven-multiple-choice-chart") {
+          const correctAnswers = q.correctAnswers || [q.correctAnswer];
+          document.querySelectorAll(".mcq-option").forEach((opt) => {
+            if (correctAnswers.includes(opt.dataset.id)) {
+              opt.classList.add("selected");
+            } else if (selectedOptions.includes(opt.dataset.id) || previouslySelectedOptions.includes(opt.dataset.id)) {
+              opt.classList.add("wrong-answer");
+            }
+          });
+        }
+      }
+    });
+
+    // Explanation button - does nothing, just stays visible
+    elements.explanationCorrectBtn.addEventListener("click", () => {
+      // Button remains visible but has no functionality
+    });
+
+    elements.continueBtn.addEventListener("click", () => {
+      currentQuestionIndex++;
+      if (currentQuestionIndex >= questions.length) {
+        elements.quizTitle.innerHTML = "<p style='text-align:center; font-size:24px;'>🎉 Barcha savollar tugallandi!</p>";
+        elements.chartWrapper.style.display = "none";
+        elements.mcqOptions.innerHTML = "";
+        elements.dataDrivenOptions.innerHTML = "";
+        elements.labelContainer.innerHTML = "";
+        elements.explanationBox.classList.remove("show");
+        elements.alertCorrect.style.display = "none";
+        elements.footer.style.display = "none";
+        return;
+      }
+      renderQuestion();
+    });
+
+    function updateProgress() {
+      const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+      elements.progressFill.style.width = `${progress}%`;
+      elements.progressPercent.textContent = `${Math.round(progress)}%`;
+    }
+
+    renderQuestion();
+  </script>
+
+</body>
+
+</html>
