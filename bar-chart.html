@@ -1,0 +1,2149 @@
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jadval Viktorinasi</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 14px 20px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .back-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #4f46e5;
+      transition: background 0.2s;
+    }
+
+    .back-button svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .progress-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+
+    .progress-bar {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      height: 6px;
+      background-color: #e0e7ff;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+      border-radius: 10px;
+      width: 40%;
+      /* example */
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+    }
+
+    .progress-info {
+      font-size: 13px;
+      color: #4f46e5;
+      font-weight: 700;
+      white-space: nowrap;
+      min-width: 50px;
+      text-align: right;
+      padding-right: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .progress {
+        padding: 10px;
+        gap: 8px;
+      }
+
+      .progress-bar {
+        max-width: 300px;
+      }
+
+      .progress-info {
+        font-size: 12px;
+      }
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px 20px;
+      width: 100%;
+      min-height: calc(100vh - 80px);
+    }
+
+    .content-wrapper {
+      width: 100%;
+      max-width: 700px;
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .quiz-title {
+      font-size: 18px;
+      line-height: 1.6;
+      color: #1f2937;
+    }
+
+    .quiz-title p {
+      margin-top: 12px;
+    }
+
+    .question-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+      color: #4f46e5;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      border: 1px solid #ddd6fe;
+    }
+
+    .chart-wrapper {
+      margin-top: 32px;
+      position: relative;
+      width: 100%;
+      height: 300px;
+      padding-left: 50px;
+    }
+
+    .grid-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, #e5e7eb 50%, transparent 100%);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      padding-right: 10px;
+      z-index: 2;
+    }
+
+    .bar {
+      flex: 1;
+      background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%);
+      position: relative;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      border: 2px solid transparent;
+      touch-action: manipulation;
+    }
+
+    .bar.clickable {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .bar.clickable:hover {
+      background: linear-gradient(180deg, #4caf50 0%, #388e3c 100%);
+      transform: translateY(-2px) !important;
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    }
+
+    .bar.selected {
+      background: linear-gradient(180deg, #4caf50 0%, #388e3c 100%);
+      border-color: #1b5e20 !important;
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4) !important;
+    }
+
+    .bar.selected .bar-value {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-10px) !important;
+    }
+
+    .bar.correct-answer {
+      background: linear-gradient(180deg, #4caf50 0%, #388e3c 100%) !important;
+      border-color: #1b5e20 !important;
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4) !important;
+    }
+
+    .bar.correct-answer .bar-value {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-10px) !important;
+    }
+
+    .bar.non-clickable {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .bar-value {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(5px);
+      background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+      color: white;
+      padding: 6px 12px;
+      font-size: 13px;
+      border-radius: 6px;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .bar.non-clickable .bar-value {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-10px);
+    }
+
+    .bar-value::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid #2e7d32;
+    }
+
+    .bar.clickable:hover .bar-value {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-10px);
+    }
+
+    .bar.unselected .bar-value {
+      opacity: 0 !important;
+      transform: translateX(-50%) translateY(5px) !important;
+      transition: none !important;
+    }
+
+    .y-labels {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 500;
+      transform: translateX(-1px);
+    }
+
+    .label-container {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-top: 16px;
+      padding-left: 45px;
+      gap: 12px;
+      padding-right: 10px;
+    }
+
+    .label-box {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+
+    .label-line {
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 1px;
+      width: 100%;
+      background-color: #d1d5db;
+    }
+
+    .label-text {
+      color: #374151;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .mcq-options,
+    .data-driven-options {
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .mcq-option {
+      padding: 16px 18px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      -webkit-tap-highlight-color: transparent;
+      background: #fafbfc;
+    }
+
+    .mcq-option.selected {
+      background: linear-gradient(135deg, #dffcf0 0%, #c8e6c9 100%);
+      border-color: #4caf50;
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+    }
+
+    @media (hover: hover) {
+      .bar.clickable:hover {
+        background: linear-gradient(180deg, #4caf50 0%, #388e3c 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+      }
+
+      .bar.clickable:hover .bar-value {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-10px);
+      }
+
+      .mcq-option:hover {
+        background-color: #f3f4f6;
+        border-color: #9ca3af;
+        transform: translateX(2px);
+      }
+    }
+
+    .mcq-option-id {
+      font-weight: 700;
+      min-width: 28px;
+      color: #4f46e5;
+      font-size: 16px;
+    }
+
+    .footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+      padding: 16px 20px;
+      display: flex;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .footer button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 12px;
+      padding: 14px 32px;
+      min-height: 50px;
+      outline: none;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+      width: 100%;
+      max-width: 400px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .footer button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+    }
+
+    .footer button:active {
+      transform: translateY(0);
+    }
+
+    .alert-incorrect,
+    .alert-correct {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      padding: 0;
+      display: none;
+      z-index: 101;
+      animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .alert-incorrect {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    }
+
+    .alert-correct {
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    }
+
+    .alert-content {
+      max-width: 750px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .alert-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      0% {
+        transform: scale(0);
+        opacity: 0;
+      }
+
+      70% {
+        transform: scale(1.1);
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .alert-content p {
+      font-weight: 700;
+      font-size: 24px;
+      margin-bottom: 8px;
+      color: white;
+    }
+
+    .alert-subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .alert-incorrect button,
+    .alert-correct button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      padding: 14px 20px;
+      min-height: 50px;
+      outline: none;
+      border: none;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      flex: 1;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .alert-incorrect .try-again {
+      background: rgba(255, 255, 255, 0.95);
+      color: #dc2626;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .alert-incorrect .try-again:hover {
+      background: white;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .alert-incorrect .see-answer {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(10px);
+    }
+
+    .alert-incorrect .see-answer:hover {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .alert-correct .try-again {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(10px);
+    }
+
+    .alert-correct .try-again:hover {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .alert-correct .see-answer {
+      background: rgba(255, 255, 255, 0.95);
+      color: #16a34a;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .alert-correct .see-answer:hover {
+      background: white;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .alert-incorrect button:active,
+    .alert-correct button:active {
+      transform: translateY(0);
+    }
+
+    .validation-message {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      color: #92400e;
+      padding: 14px 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 102;
+      font-size: 14px;
+      font-weight: 600;
+      display: none;
+      animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-left: 4px solid #f59e0b;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    /* Introduction Page Styles */
+    .intro-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      width: 100%;
+      max-width: 700px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      margin: 95px auto 0;
+    }
+
+    .intro-w {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .intro-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
+    }
+
+    .intro-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #4f46e5;
+      text-align: center;
+      margin: 10px;
+    }
+
+    .back-button_two {
+      position: absolute;
+      left: 20px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .back-button_two:hover {
+      transform: translateX(-3px);
+    }
+
+    .back-button_two svg {
+      width: 26px;
+      height: 26px;
+      stroke: #4f46e5;
+    }
+
+    .intro-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      width: 100%;
+    }
+
+    .intro-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .intro-section-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .intro-text {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #4b5563;
+    }
+
+    .intro-image {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .intro-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .intro-image-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: #6366f1;
+    }
+
+    .intro-image-placeholder-icon {
+      font-size: 48px;
+    }
+
+    .intro-image-placeholder-text {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .intro-button {
+      margin-top: 32px;
+      padding: 14px 32px;
+      min-height: 50px;
+      outline: none;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+      border-radius: 12px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .intro-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+    }
+
+    .intro-button:active {
+      transform: translateY(0);
+    }
+
+    .back-button {
+      width: 43px;
+      height: 43px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 201;
+      transition: all 0.2s ease;
+    }
+
+    .back-button:hover {
+      transform: translateX(-2px);
+    }
+
+    .back-button:active {
+      transform: translateY(0);
+    }
+
+    .back-button-icon {
+      font-size: 20px;
+      color: #4f46e5;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Fixed Start Button */
+    .start_btn_wrapper {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+      padding: 16px 20px;
+      display: flex;
+      justify-content: center;
+      z-index: 100;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+    }
+
+    .fixed-start-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 12px;
+      padding: 14px 32px;
+      min-height: 50px;
+      outline: none;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+      width: 100%;
+      max-width: 400px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Completion Screen Styles */
+    .comp {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(15vh - 10px);
+      inset: 0;
+      margin-right: 10px;
+      margin-left: 10px;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    .completion-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      width: 100%;
+      max-width: 700px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: calc(100% - 25px);
+    }
+
+    .completion-message {
+      font-size: 28px;
+      font-weight: 700;
+      color: #4f46e5;
+      margin-bottom: 32px;
+    }
+
+    .completion-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .completion-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 12px;
+      padding: 14px 24px;
+      min-height: 50px;
+      outline: none;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      flex: 1;
+      max-width: 200px;
+    }
+
+    .reset-button {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+
+    .reset-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+    }
+
+    .next-button {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .next-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    }
+
+    .completion-button:active {
+      transform: translateY(0);
+    }
+
+    /* Explanation Modal Styles */
+    .explanation-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .explanation-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .explanation-content {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .explanation-modal.active .explanation-content {
+      transform: scale(1);
+    }
+
+    .explanation-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #f3f4f6;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #4b5563;
+      transition: all 0.2s ease;
+    }
+
+    .explanation-close:hover {
+      background: #e5e7eb;
+      transform: rotate(90deg);
+    }
+
+    .explanation-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 16px;
+      padding-right: 30px;
+    }
+
+    .explanation-text {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #4b5563;
+    }
+
+    @media (max-width: 480px) {
+      .main {
+        padding: 70px 12px 12px;
+        min-height: calc(100vh - 70px);
+      }
+
+      .content-wrapper {
+        max-width: 100%;
+        border-radius: 16px;
+        padding: 24px 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      }
+
+      .quiz-title {
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .quiz-title p {
+        margin-top: 10px;
+      }
+
+      .question-badge {
+        padding: 5px 12px;
+        font-size: 11px;
+        margin-bottom: 12px;
+      }
+
+      .chart-wrapper {
+        margin-top: 20px;
+        height: 220px;
+        padding-left: 35px;
+      }
+
+      .chart-container {
+        gap: 8px;
+        padding-right: 5px;
+      }
+
+      .bar {
+        border-radius: 6px 6px 0 0;
+      }
+
+      .bar-value {
+        padding: 4px 8px;
+        font-size: 11px;
+        border-radius: 4px;
+      }
+
+      .bar-value::after {
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 4px solid #2e7d32;
+      }
+
+      .y-labels {
+        font-size: 10px;
+        transform: translateX(-1px);
+      }
+
+      .label-container {
+        margin-top: 12px;
+        padding-left: 35px;
+        gap: 8px;
+        padding-right: 5px;
+      }
+
+      .label-text {
+        font-size: 12px;
+        margin-top: 6px;
+      }
+
+      .mcq-options,
+      .data-driven-options {
+        margin-top: 18px;
+        gap: 10px;
+      }
+
+      .mcq-option {
+        padding: 14px 14px;
+        border-radius: 10px;
+        font-size: 14px;
+        gap: 10px;
+      }
+
+      .mcq-option-id {
+        min-width: 24px;
+        font-size: 14px;
+      }
+
+      .footer {
+        padding: 12px 12px;
+      }
+
+      .footer button {
+        padding: 12px 24px;
+        min-height: 48px;
+        font-size: 15px;
+        border-radius: 10px;
+        max-width: 100%;
+      }
+
+      .alert-content {
+        padding: 24px 16px;
+      }
+
+      .alert-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
+      }
+
+      .alert-content p {
+        font-size: 20px;
+        margin-bottom: 6px;
+      }
+
+      .alert-subtitle {
+        font-size: 13px;
+        margin-bottom: 18px;
+      }
+
+      .button-group {
+        gap: 10px;
+      }
+
+      .alert-incorrect button,
+      .alert-correct button {
+        padding: 12px 16px;
+        min-height: 46px;
+        font-size: 13px;
+        border-radius: 8px;
+      }
+
+      .validation-message {
+        top: 70px;
+        padding: 12px 20px;
+        font-size: 13px;
+        border-radius: 10px;
+      }
+
+      .intro-page {
+        padding: 24px 16px;
+      }
+
+      .intro-title {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+
+      .intro-section-title {
+        font-size: 18px;
+      }
+
+      .intro-text {
+        font-size: 15px;
+      }
+
+      .intro-image {
+        height: 160px;
+      }
+
+      .intro-button {
+        margin-top: 24px;
+        padding: 12px 24px;
+        min-height: 48px;
+        font-size: 15px;
+      }
+
+      .comp {
+        min-height: calc(20vh - 70px);
+      }
+
+      .completion-message {
+        font-size: 24px;
+        margin-bottom: 24px;
+      }
+
+      .completion-buttons {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .completion-button {
+        max-width: 100%;
+      }
+
+      .explanation-content {
+        padding: 20px;
+        width: 95%;
+      }
+
+      .explanation-title {
+        font-size: 20px;
+      }
+
+      .explanation-text {
+        font-size: 15px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .main {
+        padding: 65px 8px 8px;
+        min-height: calc(100vh - 65px);
+      }
+
+      .content-wrapper {
+        padding: 18px 12px;
+        border-radius: 16px;
+      }
+
+      .quiz-title {
+        font-size: 15px;
+      }
+
+      .progress {
+        padding: 12px 10px;
+      }
+
+      .progress-bar {
+        height: 4px;
+      }
+
+      .progress-left {
+        gap: 6px;
+      }
+
+      .progress-container {
+        gap: 8px;
+      }
+
+      .progress-info {
+        font-size: 10px;
+        min-width: 40px;
+      }
+
+      .chart-wrapper {
+        height: 200px;
+        padding-left: 30px;
+        margin-top: 16px;
+      }
+
+      .y-labels {
+        font-size: 9px;
+        transform: translateX(-1px);
+      }
+
+      .label-container {
+        padding-left: 30px;
+      }
+
+      .bar-value {
+        font-size: 10px;
+        padding: 3px 6px;
+      }
+
+      .mcq-option {
+        padding: 12px 12px;
+        font-size: 13px;
+      }
+
+      .alert-icon {
+        font-size: 36px;
+      }
+
+      .alert-content p {
+        font-size: 18px;
+      }
+
+      .alert-subtitle {
+        font-size: 12px;
+      }
+
+      .intro-page {
+        padding: 20px 12px;
+      }
+
+      .intro-title {
+        font-size: 22px;
+      }
+
+      .intro-section-title {
+        font-size: 16px;
+      }
+
+      max-width .intro-text {
+        font-size: 14px;
+      }
+
+      .intro-image {
+        height: 140px;
+      }
+
+      .comp {
+        min-height: calc(22vh - 65px);
+      }
+
+      .completion-message {
+        font-size: 22px;
+      }
+    }
+
+    @media (max-width: 320px) {
+      .progress-bar {
+        max-width: 90%;
+      }
+
+      .content-wrapper {
+        padding: 16px 10px;
+      }
+
+      .quiz-title {
+        font-size: 14px;
+      }
+
+      .chart-wrapper {
+        height: 180px;
+        padding-left: 28px;
+      }
+
+      .y-labels {
+        font-size: 8px;
+        transform: translateX(-25px);
+      }
+
+      .mcq-option {
+        padding: 11px 10px;
+        font-size: 12px;
+      }
+
+      .footer button {
+        min-height: 46px;
+        font-size: 14px;
+      }
+
+      .intro-page {
+        padding: 16px 10px;
+      }
+
+      .intro-title {
+        font-size: 20px;
+      }
+
+      .intro-section-title {
+        font-size: 15px;
+      }
+
+      .intro-text {
+        font-size: 13px;
+      }
+
+      .intro-image {
+        height: 120px;
+      }
+
+      .completion-message {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Introduction Page -->
+  <div class="intro-w">
+    <div class="intro-wrapper">
+      <button class="back-button_two">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
+      <h1 class="intro-title">Jadval Viktorinasi</h1>
+    </div>
+  </div>
+
+
+  <div class="intro-page" id="introPage">
+    <div class="intro-content">
+      <div class="intro-section">
+        <h2 class="intro-section-title">Qanday ishlash kerak?</h2>
+        <p class="intro-text">
+          Bu viktinada sizga turli xil grafiklar va jadvallar ko'rsatiladi. Sizning vazifangiz - grafikdagi
+          ma'lumotlarni tahlil qilib, to'g'ri javobni topish.
+        </p>
+      </div>
+
+      <div class="intro-image">
+        <div class="intro-image-placeholder">
+          <div class="intro-image-placeholder-icon">📊</div>
+          <div class="intro-image-placeholder-text">Grafik misoli</div>
+        </div>
+      </div>
+
+      <div class="intro-section">
+        <h2 class="intro-section-title">Grafiklarni o'qish</h2>
+        <p class="intro-text">
+          Har bir grafikda ma'lumotlar ustunlar shaklida ko'rsatilgan. Ustunlar balandligi qiymatning kattaligini
+          bildiradi. Ustunlarning ostida esa ularning nomlari yozilgan.
+        </p>
+      </div>
+
+      <div class="intro-image">
+        <div class="intro-image-placeholder">
+          <div class="intro-image-placeholder-icon">📈</div>
+          <div class="intro-image-placeholder-text">Ma'lumotlarni solishtirish</div>
+        </div>
+      </div>
+
+      <div class="intro-section">
+        <h2 class="intro-section-title">Javob berish</h2>
+        <p class="intro-text">
+          Savolga javob berish uchun grafikdagi to'g'ri ustunni tanlang yoki berilgan variantlardan to'g'risini tanlang.
+          "Tekshirish" tugmasini bosib javobingizni tekshiring.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fixed Start Button -->
+  <div class="start_btn_wrapper">
+    <button class="fixed-start-button" id="startBtn">Boshlash</button>
+  </div>
+
+  <!-- Quiz Section -->
+  <div class="quiz-section hidden" id="quizSection">
+    <div class="progress">
+      <button class="back-button" id="backBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
+
+      <div class="progress-center">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+
+      <div class="progress-info">
+        <span id="progressCurrent">1</span>/<span id="progressTotal">10</span>
+      </div>
+    </div>
+
+    <div class="validation-message" id="validationMessage">Iltimos, javobni tanlang</div>
+
+    <div class="main">
+      <div class="content-wrapper">
+        <div class="quiz-title" id="quizTitle"></div>
+        <div class="chart-wrapper" id="chartWrapper" style="display:none;">
+          <div class="grid-line" style="top: 0;"></div>
+          <div class="grid-line" style="top: 25%;"></div>
+          <div class="grid-line" style="top: 50%;"></div>
+          <div class="grid-line" style="top: 75%;"></div>
+          <div class="grid-line" style="top: 100%;"></div>
+          <div class="y-labels" id="yLabels"></div>
+          <div class="chart-container" id="chartContainer"></div>
+        </div>
+        <div class="label-container" id="labelContainer"></div>
+        <div class="mcq-options" id="mcqOptions"></div>
+        <div class="data-driven-options" id="dataDrivenOptions"></div>
+      </div>
+    </div>
+
+    <div class="alert-incorrect" id="alertIncorrect">
+      <div class="alert-content">
+        <div class="alert-icon">❌</div>
+        <p id="alertTextIncorrect">Noto'g'ri</p>
+        <div class="alert-subtitle">Javob noto'g'ri. Yana bir bor urinib ko'ring!</div>
+        <div class="button-group">
+          <button class="try-again" id="tryAgainBtn">Yana urinish</button>
+          <button class="see-answer" id="seeAnswerIncorrectBtn">Tushuntirish</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert-correct" id="alertCorrect">
+      <div class="alert-content">
+        <div class="alert-icon">✅</div>
+        <p id="alertTextCorrect">To'g'ri!</p>
+        <div class="alert-subtitle">Ajoyib! Siz to'g'ri javob berdingiz!</div>
+        <div class="button-group">
+          <button class="try-again" id="explanationCorrectBtn">Tushuntirish</button>
+          <button class="see-answer" id="continueBtn">Davom etish</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer" id="footer">
+      <button id="checkBtn">Tekshirish</button>
+    </div>
+  </div>
+
+  <!-- Explanation Modal -->
+  <div class="explanation-modal" id="explanationModal">
+    <div class="explanation-content">
+      <button class="explanation-close" id="explanationClose">✕</button>
+      <h3 class="explanation-title">Tushuntirish</h3>
+      <div class="explanation-text" id="explanationText"></div>
+    </div>
+  </div>
+
+  <!-- Completion Screen -->
+  <div class="comp">
+    <div class="completion-screen hidden" id="completionScreen">
+      <div class="completion-message">🎉 Barcha savollar tugallandi.</div>
+      <div class="completion-buttons">
+        <button class="completion-button reset-button" id="resetBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 4v6h6"></path>
+            <path d="M23 20v-6h-6"></path>
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+          </svg>
+          Qaytatdan
+        </button>
+        <button class="completion-button next-button" id="nextBtn">Keyingisi</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    const playClickSound = () => {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      osc.frequency.value = 800;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      osc.start(audioContext.currentTime);
+      osc.stop(audioContext.currentTime + 0.1);
+    };
+
+    const playCorrectSound = () => {
+      const osc1 = audioContext.createOscillator();
+      const osc2 = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioContext.destination);
+      osc1.frequency.value = 523.25;
+      osc2.frequency.value = 659.25;
+      gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      osc1.start(audioContext.currentTime);
+      osc2.start(audioContext.currentTime + 0.1);
+      osc1.stop(audioContext.currentTime + 0.3);
+      osc2.stop(audioContext.currentTime + 0.5);
+    };
+
+    const playWrongSound = () => {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      osc.frequency.value = 200;
+      osc.type = 'sawtooth';
+      gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      osc.start(audioContext.currentTime);
+      osc.stop(audioContext.currentTime + 0.3);
+    };
+
+    const questions = [
+      {
+        type: "bar-chart",
+        question: "Qaysi shtatda taxminan 125 ta kafe bor?",
+        explanation: "Grafikdagi ma'lumotlarga qarab, CT shtatida 125 ta kafe bor. Bu grafikdagi eng past qiymat, lekin savolga javob berish uchun to'g'ri qiymatni topish kerak. Boshqa shtatlardagi kafe sonlari: DE - 50, NJ - 300, NY - 650, PA - 400.",
+        data: [
+          { label: "CT", value: 125, correct: true },
+          { label: "DE", value: 50, correct: false },
+          { label: "NJ", value: 300, correct: false },
+          { label: "NY", value: 650, correct: false },
+          { label: "PA", value: 400, correct: false },
+        ],
+      },
+      {
+        type: "multiple-choice",
+        question: "Qaysi hududda aholi jon boshiga eng ko'p kafe mavjud?",
+        explanation: "Shahar poytaxtlarida aholi jon boshiga eng ko'p kafe mavjud. Bu odatda shahar markazlarida aholi zichligi yuqori bo'lishi, turistik obyektlar ko'pligi va ish markazlari tufayli kafelarga talab yuqori bo'ladi. Dehqonchilik bilan shug'ullanadigan qishloq hududlarida aholi zichligi past va kafelar kamroq. Shahar atrofi turar-joy hududlari va sanoat zonalari o'rtacha ko'rsatkichlarga ega.",
+        options: [
+          { id: "A", text: "Dehqonchilik bilan shug'ullanadigan qishloq hududlari" },
+          { id: "B", text: "Shahar poytaxtlari" },
+          { id: "C", text: "Shahar atrofi turar-joy hududlari" },
+          { id: "D", text: "Sanoat zonalari" },
+          { id: "E", text: "Sanoat zonalari" },
+          { id: "F", text: "Sanoat zonalari" },
+        ],
+        correctAnswer: "B",
+      },
+      {
+        type: "data-driven-multiple-choice-chart",
+        question: "Qaysi shtat yiliga taxminan 200 tonna qahva yetishtiradi?",
+        explanation: "Grafikdagi ma'lumotlarga qarab, MO shtatida yiliga taxminan 200 tonna qahva yetishtiriladi. Bu qiymat grafikda to'g'ri ko'rsatilgan. Boshqa shtatlarda qahva yetishtirish hajmlari: NE - 80 tonna, OK - 95 tonna, KS - 120 tonna, CO - 450 tonna.",
+        data: [
+          { label: "NE", value: 80, color: "#1e3a8a" },
+          { label: "OK", value: 95, color: "#5b21b6" },
+          { label: "KS", value: 120, color: "#a21caf" },
+          { label: "MO", value: 200, color: "#ec4899" },
+          { label: "CO", value: 450, color: "#facc15" }
+        ],
+        options: [
+          { id: "A", text: "NE" },
+          { id: "B", text: "MO" },
+          { id: "C", text: "CO" }
+        ],
+        correctAnswer: "B",
+      },
+      {
+        type: "data-driven-multiple-choice-chart",
+        question: "Qaysi ikki shtat yiliga 150 tonnadan ko'proq qahva yetishtiradi?",
+        explanation: "Grafikdagi ma'lumotlarga qarab, MO (200 tonna) va CO (450 tonna) shtatlari yiliga 150 tonnadan ko'proq qahva yetishtiradi. Bu ikkala shtat ham grafikda ko'rsatilgan qiymatlar 150 tonnadan yuqori. Boshqa shtatlarda qahva yetishtirish hajmlari: NE - 80 tonna, OK - 95 tonna, KS - 120 tonna.",
+        data: [
+          { label: "NE", value: 80, color: "#1e3a8a" },
+          { label: "OK", value: 95, color: "#5b21b6" },
+          { label: "KS", value: 120, color: "#a21caf" },
+          { label: "MO", value: 200, color: "#ec4899" },
+          { label: "CO", value: 450, color: "#facc15" }
+        ],
+        options: [
+          { id: "A", text: "NE" },
+          { id: "B", text: "KS" },
+          { id: "C", text: "MO" },
+          { id: "D", text: "CO" }
+        ],
+        correctAnswers: ["C", "D"],
+        multiSelect: true,
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let selectedBars = [];
+    let selectedOptions = [];
+    let previouslySelectedBars = [];
+    let previouslySelectedOptions = [];
+    let isAnswered = false;
+    let wrongAttempts = 0;
+
+    const elements = {
+      introWrapper: document.querySelector(".intro-wrapper"),
+      introPage: document.getElementById("introPage"),
+      quizSection: document.getElementById("quizSection"),
+      completionScreen: document.getElementById("completionScreen"),
+      startBtn: document.getElementById("startBtn"),
+      backBtn: document.getElementById("backBtn"),
+      chartContainer: document.getElementById("chartContainer"),
+      labelContainer: document.getElementById("labelContainer"),
+      quizTitle: document.getElementById("quizTitle"),
+      checkBtn: document.getElementById("checkBtn"),
+      alertIncorrect: document.getElementById("alertIncorrect"),
+      alertCorrect: document.getElementById("alertCorrect"),
+      tryAgainBtn: document.getElementById("tryAgainBtn"),
+      seeAnswerIncorrectBtn: document.getElementById("seeAnswerIncorrectBtn"),
+      explanationCorrectBtn: document.getElementById("explanationCorrectBtn"),
+      continueBtn: document.getElementById("continueBtn"),
+      progressFill: document.getElementById("progressFill"),
+      progressCurrent: document.getElementById("progressCurrent"),
+      progressTotal: document.getElementById("progressTotal"),
+      footer: document.getElementById("footer"),
+      yLabels: document.getElementById("yLabels"),
+      validationMessage: document.getElementById("validationMessage"),
+      chartWrapper: document.getElementById("chartWrapper"),
+      mcqOptions: document.getElementById("mcqOptions"),
+      dataDrivenOptions: document.getElementById("dataDrivenOptions"),
+      resetBtn: document.getElementById("resetBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      explanationModal: document.getElementById("explanationModal"),
+      explanationClose: document.getElementById("explanationClose"),
+      explanationText: document.getElementById("explanationText")
+    };
+
+    document.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+        playClickSound();
+      }
+    });
+
+    // Start button event listener
+    elements.startBtn.addEventListener("click", () => {
+      elements.introWrapper.classList.add("hidden")
+      elements.introPage.classList.add("hidden");
+      elements.startBtn.parentElement.classList.add("hidden");
+      elements.quizSection.classList.remove("hidden");
+      renderQuestion();
+    });
+
+    // Back button event listener
+    elements.backBtn.addEventListener("click", () => {
+      elements.introWrapper.classList.remove("hidden")
+      elements.quizSection.classList.add("hidden");
+      elements.introPage.classList.remove("hidden");
+      elements.startBtn.parentElement.classList.remove("hidden");
+    });
+
+    // Reset button event listener
+    elements.resetBtn.addEventListener("click", () => {
+      currentQuestionIndex = 0;
+      elements.completionScreen.classList.add("hidden");
+      elements.quizSection.classList.remove("hidden");
+      renderQuestion();
+    });
+
+    // Next button event listener
+    elements.nextBtn.addEventListener("click", () => {
+      // This would navigate to the next quiz or section
+      // For now, we'll just restart the quiz
+      currentQuestionIndex = 0;
+      elements.completionScreen.classList.add("hidden");
+      elements.quizSection.classList.remove("hidden");
+      renderQuestion();
+    });
+
+    // Explanation modal close button
+    elements.explanationClose.addEventListener("click", () => {
+      elements.explanationModal.classList.remove("active");
+    });
+
+    // Close modal when clicking outside the content
+    elements.explanationModal.addEventListener("click", (e) => {
+      if (e.target === elements.explanationModal) {
+        elements.explanationModal.classList.remove("active");
+      }
+    });
+
+    const renderQuestion = () => {
+      const q = questions[currentQuestionIndex];
+      isAnswered = false;
+      selectedBars = [];
+      selectedOptions = [];
+      previouslySelectedBars = [];
+      previouslySelectedOptions = [];
+      wrongAttempts = 0;
+
+      const badge = q.type === "multiple-choice" ? `<div class="question-badge">Ko'p variantli savol</div>` :
+        (q.type === "data-driven-multiple-choice-chart" && q.multiSelect) ? `<div class="question-badge">Bir nechta javobni tanlang</div>` : "";
+
+      elements.quizTitle.innerHTML = `${badge}<p>${q.question}</p>`;
+      elements.chartContainer.innerHTML = "";
+      elements.labelContainer.innerHTML = "";
+      elements.mcqOptions.innerHTML = "";
+      elements.dataDrivenOptions.innerHTML = "";
+
+      if (q.type === "bar-chart" || q.type === "data-driven-multiple-choice-chart") {
+        elements.chartWrapper.style.display = "block";
+        renderChart(q);
+      } else {
+        elements.chartWrapper.style.display = "none";
+      }
+
+      if (q.type === "multiple-choice") {
+        renderMCQ(q);
+      } else if (q.type === "data-driven-multiple-choice-chart") {
+        renderDataDrivenMCQ(q);
+      }
+
+      elements.alertIncorrect.style.display = "none";
+      elements.alertCorrect.style.display = "none";
+      elements.footer.style.display = "flex";
+      updateProgress();
+    };
+
+    const renderChart = (q) => {
+      const values = q.data.map(d => d.value);
+      const maxValue = Math.max(...values);
+      const yMax = Math.ceil(maxValue / 50) * 50 + 50;
+      const yStep = yMax / 4;
+
+      elements.yLabels.innerHTML = "";
+      for (let i = 4; i >= 0; i--) {
+        const label = document.createElement("div");
+        label.textContent = Math.round(yStep * i);
+        elements.yLabels.appendChild(label);
+      }
+
+      q.data.forEach((item, i) => {
+        const bar = document.createElement("div");
+        bar.className = "bar";
+
+        if (q.type === "data-driven-multiple-choice-chart") {
+          bar.classList.add("non-clickable");
+          bar.style.backgroundColor = item.color;
+        } else {
+          bar.classList.add("clickable");
+          bar.addEventListener("pointerdown", (e) => {
+            toggleSelectBar(bar);
+            e.preventDefault();
+            e.stopPropagation();
+          });
+        }
+
+        bar.style.height = `${(item.value / yMax) * 100}%`;
+        bar.dataset.correct = item.correct || false;
+        bar.dataset.index = i;
+        bar.innerHTML = `<div class="bar-value">${item.value}</div>`;
+        elements.chartContainer.appendChild(bar);
+
+        const labelBox = document.createElement("div");
+        labelBox.className = "label-box";
+        labelBox.innerHTML = `
+              <div class="label-line"></div>
+              <div class="label-text">${item.label}</div>
+            `;
+        elements.labelContainer.appendChild(labelBox);
+      });
+    };
+
+    const renderMCQ = (q) => {
+      q.options.forEach((option) => {
+        const optionDiv = document.createElement("div");
+        optionDiv.className = "mcq-option";
+        optionDiv.dataset.id = option.id;
+        optionDiv.innerHTML = `<span class="mcq-option-id">${option.id}.</span><span>${option.text}</span>`;
+        optionDiv.addEventListener("click", () => toggleSelectOption(optionDiv));
+        elements.mcqOptions.appendChild(optionDiv);
+      });
+    };
+
+    const renderDataDrivenMCQ = (q) => {
+      q.options.forEach((option) => {
+        const optionDiv = document.createElement("div");
+        optionDiv.className = "mcq-option";
+        optionDiv.dataset.id = option.id;
+        optionDiv.innerHTML = `<span class="mcq-option-id">${option.id}.</span><span>${option.text}</span>`;
+        optionDiv.addEventListener("click", () => toggleSelectOption(optionDiv, q.multiSelect));
+        elements.dataDrivenOptions.appendChild(optionDiv);
+      });
+    };
+
+    const toggleSelectBar = (bar) => {
+      if (isAnswered) return;
+
+      const barId = bar.dataset.index;
+
+      if (selectedBars.includes(barId)) {
+        bar.classList.remove("selected");
+        bar.classList.add("unselected");
+
+        // Force immediate opacity change and remove hover class
+        bar.classList.remove("bar-hover");
+        const barValue = bar.querySelector('.bar-value');
+        if (barValue) {
+          barValue.style.opacity = '0';
+          barValue.style.transform = 'translateX(-50%) translateY(5px)';
+          barValue.style.transition = 'none';
+
+          // Force reflow to ensure immediate style application
+          void barValue.offsetWidth;
+        }
+
+        setTimeout(() => {
+          bar.classList.remove("unselected");
+          if (barValue) {
+            barValue.style.transition = '';
+          }
+        }, 250);
+
+        selectedBars = selectedBars.filter(id => id !== barId);
+
+        bar.style.background = "linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%)";
+        bar.style.borderColor = "transparent";
+        bar.style.boxShadow = "none";
+        bar.style.transform = "";
+
+        return;
+      }
+
+      selectedBars.forEach(id => {
+        const prevBar = document.querySelector(`.bar[data-index="${id}"]`);
+        if (prevBar) {
+          prevBar.classList.remove("selected", "bar-hover");
+          prevBar.classList.add("unselected");
+
+          // Force immediate opacity change
+          const prevBarValue = prevBar.querySelector('.bar-value');
+          if (prevBarValue) {
+            prevBarValue.style.opacity = '0';
+            prevBarValue.style.transform = 'translateX(-50%) translateY(5px)';
+            prevBarValue.style.transition = 'none';
+
+            // Force reflow
+            void prevBarValue.offsetWidth;
+          }
+
+          setTimeout(() => {
+            prevBar.classList.remove("unselected");
+            if (prevBarValue) {
+              prevBarValue.style.transition = '';
+            }
+          }, 250);
+
+          prevBar.style.background = "linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%)";
+          prevBar.style.borderColor = "transparent";
+          prevBar.style.boxShadow = "none";
+          prevBar.style.transform = "";
+        }
+      });
+
+      selectedBars = [barId];
+      bar.classList.add("selected");
+      bar.style.background = "linear-gradient(180deg, #4caf50 0%, #388e3c 100%)";
+      bar.style.borderColor = "#1b5e20";
+      bar.style.boxShadow = "0 4px 12px rgba(76, 175, 80, 0.4)";
+      bar.style.transform = "";
+
+      // Reset inline styles for bar-value when selected
+      const barValue = bar.querySelector('.bar-value');
+      if (barValue) {
+        barValue.style.opacity = '';
+        barValue.style.transform = '';
+        barValue.style.transition = '';
+      }
+    };
+
+    const toggleSelectOption = (optionDiv, multiSelect = false) => {
+      if (isAnswered) return;
+
+      const optionId = optionDiv.dataset.id;
+
+      if (selectedOptions.includes(optionId)) {
+        optionDiv.classList.remove("selected");
+        selectedOptions = selectedOptions.filter(id => id !== optionId);
+      } else {
+        if (!multiSelect) {
+          document.querySelectorAll(".mcq-option.selected").forEach(opt => {
+            opt.classList.remove("selected");
+          });
+          selectedOptions = [];
+        }
+        optionDiv.classList.add("selected");
+        selectedOptions.push(optionId);
+      }
+    };
+
+    const showValidationMessage = (message) => {
+      elements.validationMessage.textContent = message;
+      elements.validationMessage.style.display = "block";
+      setTimeout(() => {
+        elements.validationMessage.style.display = "none";
+      }, 2500);
+    };
+
+    elements.checkBtn.addEventListener("click", () => {
+      const q = questions[currentQuestionIndex];
+
+      if (q.type === "bar-chart") {
+        if (selectedBars.length === 0) {
+          showValidationMessage("Iltimos, javobni tanlang");
+          return;
+        }
+      } else if (selectedOptions.length === 0) {
+        showValidationMessage("Iltimos, javobni tanlang");
+        return;
+      }
+
+      const isCorrect = checkAnswer(q);
+      isAnswered = true;
+
+      if (isCorrect) {
+        playCorrectSound();
+      } else {
+        playWrongSound();
+        wrongAttempts++;
+      }
+
+      showFeedback(isCorrect);
+    });
+
+    const checkAnswer = (q) => {
+      if (q.type === "bar-chart") {
+        const correctCount = q.data.filter(d => d.correct).length;
+
+        const allCorrect = selectedBars.every(id => {
+          const bar = document.querySelector(`.bar[data-index="${id}"]`);
+          return bar && bar.dataset.correct === "true";
+        });
+
+        return allCorrect && selectedBars.length === correctCount;
+      } else if (q.type === "multiple-choice") {
+        return selectedOptions.length === 1 && selectedOptions[0] === q.correctAnswer;
+      } else if (q.type === "data-driven-multiple-choice-chart") {
+        if (q.multiSelect) {
+          const correctAnswers = q.correctAnswers.sort();
+          const userAnswers = selectedOptions.sort();
+          return JSON.stringify(correctAnswers) === JSON.stringify(userAnswers);
+        } else {
+          return selectedOptions.length === 1 && selectedOptions[0] === q.correctAnswer;
+        }
+      }
+      return false;
+    };
+
+    const showFeedback = (correct) => {
+      elements.footer.style.display = "none";
+
+      if (correct) {
+        elements.alertCorrect.style.display = "block";
+        elements.alertIncorrect.style.display = "none";
+      } else {
+        elements.alertIncorrect.style.display = "block";
+        elements.alertCorrect.style.display = "none";
+
+        // Change button text based on wrong attempts
+        if (wrongAttempts >= 3) {
+          elements.seeAnswerIncorrectBtn.textContent = "Javobni ko'rish";
+        } else {
+          elements.seeAnswerIncorrectBtn.textContent = "Tushuntirish";
+        }
+      }
+    };
+
+    elements.tryAgainBtn.addEventListener("click", () => {
+      elements.alertIncorrect.style.display = "none";
+      elements.footer.style.display = "flex";
+      isAnswered = false;
+
+      const q = questions[currentQuestionIndex];
+
+      if (q.type === "bar-chart") {
+        // Clear all selected bars including correct-answer
+        document.querySelectorAll(".bar").forEach(bar => {
+          bar.classList.remove("selected", "correct-answer");
+          bar.classList.add("unselected");
+
+          // Force immediate opacity change for small screens
+          const barValue = bar.querySelector('.bar-value');
+          if (barValue) {
+            barValue.style.opacity = '0';
+            barValue.style.transform = 'translateX(-50%) translateY(5px)';
+          }
+
+          setTimeout(() => bar.classList.remove("unselected"), 250);
+
+          // Reset bar appearance
+          bar.style.background = "linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%)";
+          bar.style.borderColor = "transparent";
+          bar.style.boxShadow = "none";
+        });
+      } else {
+        // Clear all selected options
+        document.querySelectorAll(".mcq-option.selected").forEach(opt => {
+          opt.classList.remove("selected");
+        });
+      }
+
+      // Reset selection arrays
+      selectedBars = [];
+      selectedOptions = [];
+      previouslySelectedBars = [];
+      previouslySelectedOptions = [];
+    });
+
+    elements.seeAnswerIncorrectBtn.addEventListener("click", () => {
+      const q = questions[currentQuestionIndex];
+
+      if (wrongAttempts >= 3) {
+        // Show the correct answer
+        if (q.type === "bar-chart") {
+          // First, clear all selections including the correct-answer class
+          document.querySelectorAll(".bar").forEach(bar => {
+            bar.classList.remove("selected", "correct-answer");
+            bar.classList.add("unselected");
+
+            // Force immediate opacity change for small screens
+            const barValue = bar.querySelector('.bar-value');
+            if (barValue) {
+              barValue.style.opacity = '0';
+              barValue.style.transform = 'translateX(-50%) translateY(5px)';
+            }
+
+            setTimeout(() => bar.classList.remove("unselected"), 250);
+
+            // Reset bar appearance
+            bar.style.background = "linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%)";
+            bar.style.borderColor = "transparent";
+            bar.style.boxShadow = "none";
+          });
+
+          // Then add correct-answer class to correct bars
+          setTimeout(() => {
+            document.querySelectorAll(".bar.clickable").forEach(bar => {
+              if (bar.dataset.correct === "true") {
+                bar.classList.add("correct-answer");
+                // Explicitly set the background gradient
+                bar.style.background = "linear-gradient(180deg, #4caf50 0%, #388e3c 100%)";
+                bar.style.borderColor = "#1b5e20";
+                bar.style.boxShadow = "0 4px 12px rgba(76, 175, 80, 0.4)";
+              }
+            });
+          }, 300);
+        } else {
+          // First, clear all selections
+          document.querySelectorAll(".mcq-option").forEach(opt => {
+            opt.classList.remove("selected");
+          });
+
+          // Then add selected class to correct options
+          const correctAnswers = q.correctAnswers || [q.correctAnswer];
+          document.querySelectorAll(".mcq-option").forEach(opt => {
+            if (correctAnswers.includes(opt.dataset.id)) {
+              opt.classList.add("selected");
+            }
+          });
+        }
+      } else {
+        // Show explanation modal
+        showExplanation(q);
+      }
+    });
+
+    elements.explanationCorrectBtn.addEventListener("click", () => {
+      const q = questions[currentQuestionIndex];
+      showExplanation(q);
+    });
+
+    const showExplanation = (q) => {
+      elements.explanationText.textContent = q.explanation || "Bu savolga tushuntirish mavjud emas.";
+      elements.explanationModal.classList.add("active");
+    };
+
+    elements.continueBtn.addEventListener("click", () => {
+      currentQuestionIndex++;
+      if (currentQuestionIndex >= questions.length) {
+        // Show completion screen instead of just a message
+        elements.quizSection.classList.add("hidden");
+        elements.completionScreen.classList.remove("hidden");
+        return;
+      }
+      renderQuestion();
+    });
+
+    const updateProgress = () => {
+      const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+      elements.progressFill.style.width = `${progress}%`;
+      elements.progressCurrent.textContent = currentQuestionIndex + 1;
+      elements.progressTotal.textContent = questions.length;
+    };
+  </script>
+</body>
+
+</html>
